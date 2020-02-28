@@ -6,14 +6,18 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.example.domain.Article;
 import com.example.repository.ArticleRepository;
 
 @Controller
+@RequestMapping("/bbs")
+@Transactional
 public class ShowBbsController {
-	
+
 	@Autowired
 	private ArticleRepository articleRepository;
 
@@ -27,13 +31,13 @@ public class ShowBbsController {
 	public String form(Model model) {
 		// 計測スタート
 		LocalDateTime time = LocalDateTime.now();
-		
+
 		List<Article> articleList = articleRepository.findAll();
-		
+
 		// 記事サイズをスコープに格納する
 		model.addAttribute("listSize", articleList.size());
 		// 件数が多いと表示は時間がかかるので最初の10個のみスコープへ格納する
-		if(articleList.size() >= 10) {
+		if (articleList.size() >= 10) {
 			articleList = articleList.subList(0, 10);
 		}
 		// 記事リストをスコープに格納する
@@ -42,9 +46,8 @@ public class ShowBbsController {
 		// 計測開始からここまでの時間の差分を取得しスコープへ格納
 		Long lapTime = ChronoUnit.MILLIS.between(time, LocalDateTime.now());
 		model.addAttribute("lapTime", lapTime);
-		
+
 		return "joined/joinedbbsview";
 	}
-
 
 }

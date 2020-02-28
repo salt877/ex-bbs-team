@@ -3,18 +3,20 @@ package com.example.controller;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.example.domain.Comment;
 import com.example.form.CommentForm;
 import com.example.repository.CommentRepository;
 
-import jp.co.runy.bbs.joined.domain.JoinedComment;
-import jp.co.runy.bbs.joined.form.JoinedCommentForm;
-
 @Controller
+@RequestMapping("/bbs")
+@Transactional
 public class InsertCommentController {
 
 	@Autowired
@@ -22,6 +24,16 @@ public class InsertCommentController {
 
 	@Autowired
 	private ShowBbsController showBbsController;
+
+	/**
+	 * コメントのフォームを初期化します.
+	 * 
+	 * @return コメントフォーム
+	 */
+	@ModelAttribute
+	public CommentForm CommentForm() {
+		return new CommentForm();
+	}
 
 	/**
 	 * コメントを投稿します.
