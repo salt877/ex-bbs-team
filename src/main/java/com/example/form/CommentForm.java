@@ -4,14 +4,14 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 /**
- * コメントフォーム.
+ * コメントのリクエストパラメータが入るフォーム.
  * 
- * @author rinashioda
+ * @author igamasayuki
  *
  */
 public class CommentForm {
 	/** 記事ID. */
-	private Long articleId;
+	private Integer articleId;
 
 	/** コメント者名. */
 	@NotNull(message = "コメント者名は必須入力です")
@@ -23,11 +23,11 @@ public class CommentForm {
 	@Size(min = 1, message = "コメントは必須入力です")
 	private String content;
 
-	public Long getArticleId() {
+	public Integer getArticleId() {
 		return articleId;
 	}
 
-	public void setArticleId(Long articleId) {
+	public void setArticleId(Integer articleId) {
 		this.articleId = articleId;
 	}
 
@@ -49,7 +49,7 @@ public class CommentForm {
 
 	@Override
 	public String toString() {
-		return "SeparatedCommentForm [articleId=" + articleId + ", name=" + name + ", content=" + content + "]";
+		return "CommentForm [articleId=" + articleId + ", name=" + name + ", content=" + content + "]";
 	}
 
 }

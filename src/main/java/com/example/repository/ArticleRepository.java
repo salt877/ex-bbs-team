@@ -1,112 +1,119 @@
 package com.example.repository;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
-import com.example.demo.domain.ArticleDomain;
-import com.example.demo.domain.CommentDomain;
+import com.example.domain.Article;
+import com.example.domain.Comment;
 
 /**
- * articlesテーブルを操作するリポジトリ.
+ * articlesテーブル操作用のリポジトリクラス.
  * 
- * @author sota_adachi
+ * @author igamasayuki
  *
  */
 @Repository
 public class ArticleRepository {
-	/**
-	 * ArticleDomainオブジェクトを生成するローマッパー.
-	 */
-	public static final RowMapper<ArticleDomain> ARTICLE_ROW_MAPPER = (rs, i) -> {
-		ArticleDomain articleDomain = new ArticleDomain();
-		articleDomain.setId(rs.getInt("id"));
-		articleDomain.setName(rs.getString("name"));
-		articleDomain.setContent(rs.getString("content"));
-		return articleDomain;
-	};
+
+	@Autowired
+	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
 
 	/**
-	 * ArticleDomainオブジェクトリストを生成するリザルトセットエクストラクター.
+	 * articlesとcommentsテーブルを結合したものからarticleリストを作成する.
+	 * articleオブジェクト内にはcommentリストを格納する。
 	 */
-	public static final ResultSetExtractor<List<ArticleDomain>> ARTICLE_RESULT_SET_EXTRACTOR = (rs) -> {
-		List<ArticleDomain> articleList = new ArrayList<>();
-		List<CommentDomain> commentList = null;
-		ArticleDomain articleDomain = null;
-		int beforeId = 0;
+	private static final ResultSetExtractor<List<Article>> ARTICLE_RESULT_SET_EXTRACTOR = (rs) -> {
+		List<Article> articleList = new LinkedList<Article>();
+		List<Comment> commentList = null;
+		long beforeArticleId = 0;
 		while (rs.next()) {
 			int nowArticleId = rs.getInt("id");
-			if (nowArticleId != beforeId) {
-				articleDomain = new ArticleDomain();
-				articleDomain.setId(nowArticleId);
-				articleDomain.setName(rs.getString("name"));
-				articleDomain.setContent(rs.getString("content"));
-				commentList = new ArrayList<>();
-				articleDomain.setCommentList(commentList);
-				
-				articleList.add(articleDomain);
+			if (nowArticleId != beforeArticleId) {
+				Article article = new Article();
+				article.setId(nowArticleId);
+				article.setName(rs.getString("name"));
+				article.setContent(rs.getString("content"));
+				commentList = new ArrayList<Comment>();
+				article.setCommentList(commentList);
+				articleList.add(article);
 			}
 			if (rs.getInt("com_id") != 0) {
-				System.out.println(rs.getInt("com_id"));
-				CommentDomain commentDomain = new CommentDomain();
-				commentDomain.setId(rs.getInt("com_id"));
-				commentDomain.setName(rs.getString("com_name"));
-				commentDomain.setContent(rs.getString("com_content"));
-				commentDomain.setArticleId(rs.getInt("article_id"));
-				commentList.add(commentDomain);
+				Comment comment = new Comment();
+				comment.setId(rs.getLong("com_id"));
+				comment.setName(rs.getString("com_name"));
+				comment.setContent(rs.getString("com_content"));
+				commentList.add(comment);
 			}
-			beforeId = nowArticleId;
+			beforeArticleId = nowArticleId;
 		}
 		return articleList;
 	};
 
-	@Autowired
-	private NamedParameterJdbcTemplate template;
-
 	/**
-	 * 記事を投稿順に一覧で表示します.
+	 * 記事一覧を取得します.記事に含まれているコメント一覧も同時に取得します.
 	 * 
-	 * @return 記事の一覧
+	 * @return コメントを含んだ記事一覧情報
 	 */
-	public List<ArticleDomain> findAll() {
-		String sql = "SELECT id, name, content FROM articles ORDER BY id DESC";
-		List<ArticleDomain> developmentList = template.query(sql, ARTICLE_ROW_MAPPER);
-		return developmentList;
+	public List<Article> findAll() {
+		String sql = "SELECT a.id, a.name, a.content, com.id com_id, com.name com_name, com.content com_content,com.article_id "
+				+ "FROM articles a LEFT JOIN comments com ON a.id = com.article_id ORDER BY a.id DESC, com.id;";
+		List<Article> articleList = jdbcTemplate.query(sql, ARTICLE_RESULT_SET_EXTRACTOR);
+
+		return articleList;
 	}
 
 	/**
-	 * 記事を投稿します.
+	 * 記事をインサートします.
 	 * 
-	 * @param articleDomain 投稿情報
+	 * @param article 記事
+	 * @return 記事
 	 */
-	public void insert(ArticleDomain articleDomain) {
+	public Article insert(Article article) {
+		SqlParameterSource param = new BeanPropertySqlParameterSource(article);
 		String sql = "INSERT INTO articles(name, content) VALUES(:name, :content)";
-		SqlParameterSource source = new BeanPropertySqlParameterSource(articleDomain);
-		template.update(sql, source);
+		namedParameterJdbcTemplate.update(sql, param);
+		return article;
 	}
 
 	/**
-	 * 記事を削除します.
+	 * 記事をDBから削除する. <br>
+	 * コメントも同時に削除する。<br>
+	 * 参考URL http://aoyagikouhei.blog8.fc2.com/blog-entry-183.html
 	 * 
-	 * @param id
+	 * @param id 削除したい記事ID
 	 */
-	public void deleteById(Integer id) {
-		String sql = "DELETE FROM articles WHERE id = :id";
-		SqlParameterSource source = new MapSqlParameterSource().addValue("id", id);
-		template.update(sql, source);
+	public void delete(int articleId) {
+		SqlParameterSource sqlparam = new MapSqlParameterSource().addValue("id", articleId);
+		String sql = "WITH deleted AS (DELETE FROM articles WHERE id = :id RETURNING id)"
+				+ "DELETE FROM comments WHERE article_id IN (SELECT id FROM deleted)";
+
+		namedParameterJdbcTemplate.update(sql, sqlparam);
 	}
 
-	public List<ArticleDomain> findAllArticlesAndComments() {
-		String sql = "SELECT a.id, a.name, a.content, c.id com_id, c.name com_name, c.content com_content, article_id FROM articles a FULL OUTER JOIN comments c ON a.id = c.article_id ORDER BY a.id, com_id";
-		List<ArticleDomain> developmentList = template.query(sql, ARTICLE_RESULT_SET_EXTRACTOR);
-		return developmentList;
+	/**
+	 * 記事投稿者の名前で前方一致検索をする.
+	 * 
+	 * @param name 検索したい名前
+	 * @return 該当の記事とコメントのリスト
+	 */
+	public List<Article> findByUserName(String name) {
+		SqlParameterSource sqlParam = new MapSqlParameterSource().addValue("name", name + "%");
+		String sql = "SELECT a.id, a.name, a.content, com.id com_id, com.name com_name, com.content com_content,com.article_id "
+				+ "FROM articles a LEFT JOIN comments com ON a.id = com.article_id WHERE a.name LIKE :name ORDER BY a.id DESC, com.id;";
+		List<Article> articleList = namedParameterJdbcTemplate.query(sql, sqlParam, ARTICLE_RESULT_SET_EXTRACTOR);
+
+		return articleList;
 	}
 }

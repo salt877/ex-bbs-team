@@ -1,26 +1,35 @@
 package com.example.form;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 /**
- * 記事投稿時に使用するフォーム.
+ * 記事のリクエストパラメータが入るフォーム.
  * 
- * @author sota_adachi
+ * @author igamasayuki
  *
  */
 public class ArticleForm {
-	/**
-	 * 投稿者名
-	 */
-	@NotBlank(message = "名前を入力してください！")
-	@Size(min = 1, max = 50, message = "名前は50文字以内で入力してください！")
+	/** 投稿ID. */
+	private int id;
+
+	/** 投稿者名. */
+	@NotNull(message = "投稿者名は値を入力してください")
+	@Size(min = 1, max = 127, message = "投稿者名は1桁以上127桁以下で入力してください")
 	private String name;
-	/**
-	 * 投稿内容
-	 */
-	@NotBlank(message = "内容を入力してください！")
+
+	/** 投稿内容. */
+	@NotNull(message = "投稿内容は値を入力してください")
+	@Size(min = 1, message = "値を入力してください")
 	private String content;
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
 
 	public String getName() {
 		return name;
@@ -40,6 +49,7 @@ public class ArticleForm {
 
 	@Override
 	public String toString() {
-		return "ArticleForm [name=" + name + ", content=" + content + "]";
+		return "ArticleForm [id=" + id + ", name=" + name + ", content=" + content + "]";
 	}
+
 }

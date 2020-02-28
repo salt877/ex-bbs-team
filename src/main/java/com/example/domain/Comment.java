@@ -1,76 +1,59 @@
 package com.example.domain;
 
+/**
+ * コメントを表すエンティティ.
+ * 
+ * @author igamasayuki
+ */
 public class Comment {
 
-	/**
-	 * コメント情報を表すドメインクラス.
-	 * 
-	 * @author rinashioda
-	 *
-	 */
-	public class SeparatedComment {
+	/** id */
+	public Long id;
 
-		/** id */
-		public Long id;
+	/** 名前 */
+	public String name;
 
-		/** 名前 */
-		public String name;
+	/** コメント */
+	public String content;
 
-		/** コメント */
-		public String content;
+	/** 関連づく記事ID */
+	public Long articleId;
 
-		/** 関連づく記事ID */
-		public Long articleId;
+	public Long getId() {
+		return id;
+	}
 
-		public SeparatedComment() {
-		}
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-		public SeparatedComment(Long id, String name, String content, Long articleId) {
-			super();
-			this.id = id;
-			this.name = name;
-			this.content = content;
-			this.articleId = articleId;
-		}
+	public String getName() {
+		return name;
+	}
 
-		public Long getId() {
-			return id;
-		}
+	public void setName(String name) {
+		this.name = name;
+	}
 
-		public void setId(Long id) {
-			this.id = id;
-		}
+	public String getContent() {
+		return content;
+	}
 
-		public String getName() {
-			return name;
-		}
+	public void setContent(String content) {
+		this.content = content;
+	}
 
-		public void setName(String name) {
-			this.name = name;
-		}
+	public Long getArticleId() {
+		return articleId;
+	}
 
-		public String getContent() {
-			return content;
-		}
+	public void setArticleId(Long articleId) {
+		this.articleId = articleId;
+	}
 
-		public void setContent(String content) {
-			this.content = content;
-		}
-
-		public Long getArticleId() {
-			return articleId;
-		}
-
-		public void setArticleId(Long articleId) {
-			this.articleId = articleId;
-		}
-
-		@Override
-		public String toString() {
-			return "SeparatedComment [id=" + id + ", name=" + name + ", content=" + content + ", articleId=" + articleId
-					+ "]";
-		}
-
+	@Override
+	public String toString() {
+		return "Comment [id=" + id + ", name=" + name + ", content=" + content + ", articleId=" + articleId + "]";
 	}
 
 }
