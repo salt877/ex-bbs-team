@@ -49,7 +49,9 @@ public class InsertCommentController {
 			return showBbsController.form(model);
 		}
 		Comment comment = new Comment();
+		System.out.println("form:" + form);
 		BeanUtils.copyProperties(form, comment);
+		System.out.println("comment" + comment);
 		commentRepository.insert(comment);
 		return "redirect:/joinedbbs";
 	}

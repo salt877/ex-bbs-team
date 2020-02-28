@@ -14,7 +14,6 @@ import com.example.domain.Article;
 import com.example.form.ArticleForm;
 import com.example.repository.ArticleRepository;
 
-
 @Controller
 @RequestMapping("/bbs")
 @Transactional
@@ -52,7 +51,7 @@ public class InsertArticleController {
 		Article article = new Article();
 		BeanUtils.copyProperties(form, article);
 		articleRepository.insert(article);
-		return "redirect:/joinedbbs";
+		return "redirect:/bbs";
 	}
 
 }
